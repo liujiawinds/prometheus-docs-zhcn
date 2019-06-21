@@ -12,15 +12,15 @@ Prometheus服务器由许多内部组件组成，这些组件协同工作以实�
 
 ## 程序入口方法
 
- [`main()` function](https://github.com/prometheus/prometheus/blob/v2.3.1/cmd/prometheus/main.go#L77-L600) 方法初始化并运行所有其他Prometheus服务器组件。它还将相互依赖的组件连接起来。
+ [`main()` function](https://github.com/prometheus/prometheus/blob/v2.3.1/cmd/prometheus/main.go#L77-L600) 方法初始化并运行所有其他Prometheus服务组件。它还将相互依赖的组件连接起来。
 作为第一步，`main（）`定义服务器的命令行参数并将其解析为[本地配置结构](https://github.com/prometheus/prometheus/blob/v2.3.1/cmd/prometheus/main.go＃L83-L100)，同时对某些值执行额外的清理和初始化。
-请注意，此基于标志的配置结构独立于稍后从配置文件中读取的配置（由`--config.file`标志提供）。
-Prometheus区分基于标志的配置和基于文件的配置：标志用于不支持在没有服务器重启的情况下进行更新的简单设置，而配置文件中提供的任何设置都必须支持在不重新启动整个服务器的情况下重新加载。
+请注意，此配置结构体跟稍后从配置文件中读取的配置（由`--config.file`标志提供）是不同的。
+Prometheus区分基于参数的配置和基于文件的配置：参数配置是对于那些不重启就不能进行更新的简单配置，而配置文件中提供的任何设置都必须支持在不重新启动整个服务的情况下重新加载。
 
 接下来，`main（）`实例化Prometheus的所有主要运行时组件，并使用通道，引用或传入上下文将它们连接在一起，以便以后协调和取消。这些组件包括服务发现，目标抓取，存储等（如本文档的其余部分有详细叙述）。
 
-最后，服务器[运行所有组件](https://github.com/prometheus/prometheus/blob/v2.3.1/cmd/prometheus/main.go#L366-L598)在[类似actor的模型](https ：//www.brianstorti.com/the-actor-model/)，
-使用[`github.com/oklog/oklog/pkg/group`](https://godoc.org/github.com/oklog/run)协调所有互连的角色的启动和关闭。多个通道用于强制执行排序约束，例如在存储准备就绪并且初始配置文件加载已发生之前不启用Web界面。
+最后，服务[运行所有组件](https://github.com/prometheus/prometheus/blob/v2.3.1/cmd/prometheus/main.go#L366-L598)在[类似actor的模型](https://www.brianstorti.com/the-actor-model/)的协调下，
+使用[`github.com/oklog/oklog/pkg/group`](https://godoc.org/github.com/oklog/run)完成所有互连的角色的启动和关闭。另外，有多个通道用于强制执行排序约束，例如在存储准备就绪并且初始配置文件加载已发生之前不启用Web界面。
 
 ## 配置
 
